@@ -51,15 +51,45 @@ sub count_types_in_file {
     }
 }
 
+sub extract_muc_and_date_from_file_name {
+    my ($file_name) = @_;
+    return $file_name =~ m/\/logs\/chat\/(.+?@.+?)\/(\d{4})\/(\d{2})\/(\d{2})\.html/;
+}
 
-foreach (@ARGV) {
-    my $file_name = $_;
-    iterate_messages_in_file $file_name, sub {
-        my ($time, $type, $msg1, $msg2) = @_;
-        if ($type eq 'mne') {
-            print "$file_name: $time, $type, $msg1, $msg2\n";
+sub extract_nickname_from_mn_message {
+    my ($message) = @_;
+    my ($nickname) = $message =~ m/&lt;(.*?)&gt;/;
+    return $nickname;
+}
+
+sub main {
+    my $nicknames = {};
+
+    my $inc_nickname_counter = sub {
+        my ($nickname) = @_;
+        if (defined $nicknames->{$nickname}) {
+            $nicknames->{$nickname}++;
+        } else {
+            $nicknames->{$nickname} = 1;
+        }
+    };
+
+    foreach (@ARGV) {
+        my $file_name = $_;
+        my ($muc, $year, $month, $day) = extract_muc_and_date_from_file_name($file_name);
+
+        iterate_messages_in_file $file_name, sub {
+            my ($time, $type, $msg1, $msg2) = @_;
+            if ($type eq 'mn') {
+                my $nickname = extract_nickname_from_mn_message($msg1);
+                $inc_nickname_counter->($nickname);
+            }
         }
     }
+
+    print Dumper($nicknames);
 }
+
+main();
 
 1;
