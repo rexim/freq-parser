@@ -4,9 +4,10 @@ use strict;
 use warnings;
 
 use Data::Dumper;
+use HTML::Entities;
 
 # mn properties:
-# * just a message - ($msg1 =~ /&lt;(.*?)&gt;/) && ($msg2 =~ /(.*?)/)
+# * just a message - ($msg1 =~ /<(.*?)>/) && ($msg2 =~ /(.*?)/)
 
 # mne properties:
 # * /me message - $msg1 =~ /\* (.+) (.+)/
@@ -25,7 +26,10 @@ sub iterate_messages_in_file {
     open(my $fh, $file_name);
     while (<$fh>) {
         while ($_ =~ /<a.*?>\[(\d{2}:\d{2}:\d{2})\]<\/a> <font class="(.*?)">(.*?)<\/font>(.*?)<br\/>/g) {
-            $action->($1, $2, $3, $4);
+            $action->(decode_entities($1),
+                      decode_entities($2),
+                      decode_entities($3),
+                      decode_entities($4));
         }
     }
     close($fh);
@@ -58,7 +62,7 @@ sub extract_muc_and_date_from_file_name {
 
 sub extract_nickname_from_mn_message {
     my ($message) = @_;
-    my ($nickname) = $message =~ m/&lt;(.*?)&gt;/;
+    my ($nickname) = $message =~ m/<(.*?)>/;
     return $nickname;
 }
 
