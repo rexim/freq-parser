@@ -64,7 +64,7 @@ sub count_types_in_file {
     }
 }
 
-sub extract_muc_and_date_from_file_name {
+sub extract_room_and_date_from_file_name {
     my ($file_name) = @_;
     return $file_name =~ m/\/logs\/chat\/(.+?@.+?)\/(\d{4})\/(\d{2})\/(\d{2})\.html/;
 }
@@ -99,14 +99,14 @@ sub main {
     my $sth = $dbh->prepare("INSERT INTO log (time, room, sender, type, message) VALUES (?, ?, ?, ?, ?)");
     foreach (@ARGV) {
         my $file_name = $_;
-        my ($muc, $year, $month, $day) = extract_muc_and_date_from_file_name($file_name);
+        my ($room, $year, $month, $day) = extract_room_and_date_from_file_name($file_name);
 
         iterate_messages_in_file $file_name, sub {
             my ($time, $type, $msg1, $msg2) = @_;
             if ($type eq 'mn') {
-                my $nickname = extract_nickname_from_mn_message($msg1);
+                my $sender = extract_nickname_from_mn_message($msg1);
                 $sth->execute(build_timestamp($year, $month, $day, $time),
-                              $muc, $nickname, "message", $msg2);
+                              $room, $sender, "message", $msg2);
             }
         };
         print "$file_name\n";
