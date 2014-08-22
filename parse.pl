@@ -44,26 +44,6 @@ sub iterate_messages_in_file {
     close($fh);
 }
 
-sub count_types_in_file {
-    my ($file_name, $types) = @_;
-    my $message_type_mapping = {
-        'mn' => 'Regular message',
-        'mne' => '/me message',
-        'mj' => 'Join message',
-        'ml' => 'Leave message',
-        'roomcsubject' => 'Subject'
-    };
-    iterate_messages_in_file $file_name, sub {
-        my ($time, $raw_type, $msg1, $msg2) = @_;
-        my $type = $message_type_mapping->{$raw_type};
-        if (defined $types->{$type}) {
-            $types->{$type}++;
-        } else {
-            $types->{$type} = 1;
-        }
-    }
-}
-
 sub extract_room_and_date_from_file_name {
     my ($file_name) = @_;
     return $file_name =~ m/\/logs\/chat\/(.+?@.+?)\/(\d{4})\/(\d{2})\/(\d{2})\.html/;
