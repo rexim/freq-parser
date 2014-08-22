@@ -5,6 +5,7 @@ use warnings;
 
 use Data::Dumper;
 use HTML::Entities;
+use DBI;
 
 # mn properties:
 # * just a message - ($msg1 =~ /<(.*?)>/) && ($msg2 =~ /(.*?)/)
@@ -20,6 +21,14 @@ use HTML::Entities;
 
 # mj properties:
 # * just joined - ($msg1 =~ /(.+) зашёл в конференцию$/) && ($msg2 eq "")
+
+my $db_config = {
+    database => './hell',
+    host => 'localhost',
+    port => 5435,
+    username => 'sa',
+    password => 'superPw'
+};
 
 sub iterate_messages_in_file {
     my ($file_name, $action) = @_;
@@ -66,18 +75,28 @@ sub extract_nickname_from_mn_message {
     return $nickname;
 }
 
+sub build_timestamp {
+    my ($year, $month, $day, $time) = @_;
+    return "$year-$month-$day $time";
+}
+
+sub init_database {
+    my ($config) = @_;
+    my $database = $config->{database};
+    my $host = $config->{host};
+    my $port = $config->{port};
+    my $username = $config->{username};
+    my $password = $config->{password};
+
+    my $dbh = DBI->connect("dbi:Pg:dbname=$database;host=$host;port=$port;",
+                           $username, $password, {AutoCommit => 0});
+
+    return $dbh;
+}
+
 sub main {
-    my $nicknames = {};
-
-    my $inc_nickname_counter = sub {
-        my ($nickname) = @_;
-        if (defined $nicknames->{$nickname}) {
-            $nicknames->{$nickname}++;
-        } else {
-            $nicknames->{$nickname} = 1;
-        }
-    };
-
+    my $dbh = init_database($db_config);
+    my $sth = $dbh->prepare("INSERT INTO log (time, room, sender, type, message) VALUES (?, ?, ?, ?, ?)");
     foreach (@ARGV) {
         my $file_name = $_;
         my ($muc, $year, $month, $day) = extract_muc_and_date_from_file_name($file_name);
@@ -86,13 +105,15 @@ sub main {
             my ($time, $type, $msg1, $msg2) = @_;
             if ($type eq 'mn') {
                 my $nickname = extract_nickname_from_mn_message($msg1);
-                $inc_nickname_counter->($nickname);
+                $sth->execute(build_timestamp($year, $month, $day, $time),
+                              $muc, $nickname, "message", $msg2);
             }
-        }
+        };
+        print "$file_name\n";
     }
-
-    print Dumper($nicknames);
+    $dbh->commit();
 }
+
 
 main();
 
