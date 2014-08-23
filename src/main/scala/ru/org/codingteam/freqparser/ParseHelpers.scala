@@ -9,14 +9,6 @@ object ParseHelpers {
     }
   }
 
-  def extractRoomAndDateFromFileName(fileName: String): (String, String) = {
-    val Pattern = ".*/(.+?@.+?)/(\\d{4})/(\\d{2})/(\\d{2}).html".r
-    fileName match {
-      case Pattern(room, year, month, day) => (room, s"$year-$month-$day")
-      case _ => throw new IllegalArgumentException(s"File name '$fileName' doesn't match '$Pattern' regexp")
-    }
-  }
-
   def extractRoomFromFileName(fileName: String): Option[String] =
     "([^/]+@[^/]+)".r.findFirstMatchIn(fileName).map(m => m.group(1))
 

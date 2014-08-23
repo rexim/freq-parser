@@ -7,7 +7,7 @@ import scala.slick.driver.H2Driver.simple._
 import scala.slick.jdbc.StaticQuery.interpolation
 
 import ParseHelpers._
-import java.io.{FileFilter, File}
+import java.io.File
 import scala.util.matching.Regex
 
 object Main {
