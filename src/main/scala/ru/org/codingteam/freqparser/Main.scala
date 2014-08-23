@@ -6,15 +6,11 @@ import scala.io.Source
 import scala.slick.driver.H2Driver.simple._
 import scala.slick.jdbc.StaticQuery.interpolation
 
-object Main {
+import ParseHelpers._
+import java.io.{FileFilter, File}
+import scala.util.matching.Regex
 
-  def extractRoomAndDateFromFileName(fileName: String): (String, String) = {
-    val Pattern = ".*/(.+?@.+?)/(\\d{4})/(\\d{2})/(\\d{2}).html".r
-    fileName match {
-      case Pattern(room, year, month, day) => (room, s"$year-$month-$day")
-      case _ => throw new IllegalArgumentException(s"File name '$fileName' doesn't match '$Pattern' regexp")
-    }
-  }
+object Main {
 
   def foreachMessageInFile(fileName: String)(f: (String, String, String, String) => Unit): Unit = {
     val Pattern = "<a.*?>\\[(\\d{2}:\\d{2}:\\d{2})\\]</a> <font class=\"(.*?)\">(.*?)</font>(.*?)<br/>".r
@@ -27,33 +23,42 @@ object Main {
     }
   }
 
-  def extractNicknameFromMnMessage(message: String): String = {
-    val Pattern = "^<(.*)>$".r
-    message match {
-      case Pattern(nickname) => nickname
-      case _ => throw new IllegalArgumentException(s"Cannot extract nickname from this '$message'")
+  def recursiveListFiles(root: File, pattern: Regex): Array[File] = {
+    val subFiles = root.listFiles
+    val matchedSubFiles = subFiles.filter(f => pattern.findFirstIn(f.getName).isDefined)
+    matchedSubFiles ++ subFiles.filter(_.isDirectory).flatMap(recursiveListFiles(_, pattern))
+  }
+  
+  def getLogFiles(root: String): Array[String] = {
+    recursiveListFiles(new File(root), "\\d{2}\\.html".r)
+      .map(_.getAbsolutePath)
+      .sortWith(_ < _)
+  }
+
+  def convertLogFile(fileName: String)(implicit session: Session) = {
+    val room = extractRoomFromFileName(fileName).get
+    val date = extractDateFromFileName(fileName).get
+    foreachMessageInFile(fileName) {
+      case (time, "mn", msg1, msg2) => {
+        val sender = extractNicknameFromMnMessage(msg1)
+        val timestamp = s"$date $time"
+        sqlu"""
+                   INSERT INTO LOG (time, room, sender, type, message)
+                   VALUES ($timestamp, $room, ${sender.take(255)}, 'message', $msg2)
+            """.first
+      }
+
+      case _ => // ignore
     }
   }
 
-  def main(args: Array[String]) = {
-
+  def main(args: Array[String]) =
     Database.forURL("jdbc:h2:./hell", driver = "org.h2.Driver", user = "sa") withSession {
-      implicit session => {
-        val fileName = "./logs/chat/codingteam@conference.jabber.ru/2013/04/27.html"
-        val (room, date) = extractRoomAndDateFromFileName(fileName)
-        foreachMessageInFile(fileName) {
-          case (time, "mn", msg1, msg2) => {
-            val sender = extractNicknameFromMnMessage(msg1)
-            val timestamp = s"$date $time"
-            sqlu"""
-                   INSERT INTO LOG (time, room, sender, type, message)
-                   VALUES ($timestamp, $room, $sender, 'message', $msg2)
-            """.first
-          }
-
-          case _ => // ignore
+      implicit session => getLogFiles(".").foreach {
+        logFile => {
+          convertLogFile(logFile)
+          println(logFile)
         }
       }
     }
-  }
 }
