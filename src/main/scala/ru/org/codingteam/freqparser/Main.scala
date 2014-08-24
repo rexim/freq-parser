@@ -35,6 +35,18 @@ object Main {
       .sortWith(_ < _)
   }
 
+  def insertMessageIntoDatabase(timestamp: String,
+                                room: String,
+                                sender: String,
+                                messageType: String,
+                                message: String)
+                               (implicit session: Session): Unit =
+    sqlu"""
+          INSERT INTO log (time, room, sender, type, message)
+          VALUES ($timestamp, ${room.take(255)},
+                  ${sender.take(255)}, $messageType, $message)
+        """.first
+
   def convertLogFile(fileName: String)(implicit session: Session) = {
     val room = extractRoomFromFileName(fileName).get
     val date = extractDateFromFileName(fileName).get
@@ -42,10 +54,7 @@ object Main {
       case (time, "mn", msg1, msg2) => {
         val sender = extractNicknameFromMnMessage(msg1)
         val timestamp = s"$date $time"
-        sqlu"""
-                   INSERT INTO LOG (time, room, sender, type, message)
-                   VALUES ($timestamp, $room, ${sender.take(255)}, 'message', $msg2)
-            """.first
+        insertMessageIntoDatabase(timestamp, room, sender, "message", msg2)
       }
 
       case _ => // ignore
