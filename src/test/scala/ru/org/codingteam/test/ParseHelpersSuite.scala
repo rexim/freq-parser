@@ -13,10 +13,7 @@ class ParseHelpersSuite extends FunSuite {
       (Some("hello@world"), "hello@world/"),
       (None, "The Cake is a Lie!")
     )
-    testData.foreach {
-      case (expected, input) =>
-        assertResult(expected)(extractRoomFromFileName(input))
-    }
+    processStringTestData(extractRoomFromFileName)(testData)
   }
 
   test("extractDateFromFileName") {
@@ -25,10 +22,7 @@ class ParseHelpersSuite extends FunSuite {
       (None, "The Cake is a Lie!")
     )
 
-    testData.foreach {
-      case (expected, input) =>
-        assertResult(expected)(extractDateFromFileName(input))
-    }
+    processStringTestData(extractDateFromFileName)(testData)
   }
 
   test("extractRoomJid") {
@@ -37,10 +31,7 @@ class ParseHelpersSuite extends FunSuite {
       (None, "The Cake is a Lie!")
     )
 
-    testData.foreach {
-      case (expected, input) =>
-        assertResult(expected)(extractRoomJid(input))
-    }
+    processStringTestData(extractRoomJid)(testData)
   }
 
   test("extractDate") {
@@ -49,9 +40,12 @@ class ParseHelpersSuite extends FunSuite {
       (None, "The Cake is a Lie")
     )
 
-    testData.foreach {
-      case (expected, input) =>
-        assertResult(expected)(extractDate(input))
-    }
+    processStringTestData(extractDate)(testData)
   }
+
+  def processStringTestData(f: (String) => Option[String])
+                           (testData: List[(Option[String], String)]) =
+    for ((expected, input) <- testData) {
+      assertResult(expected)(f(input))
+    }
 }
