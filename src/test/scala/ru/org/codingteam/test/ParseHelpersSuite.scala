@@ -30,4 +30,28 @@ class ParseHelpersSuite extends FunSuite {
         assertResult(expected)(extractDateFromFileName(input))
     }
   }
+
+  test("extractRoomJid") {
+    val testData = List(
+      (Some("codingteam@conference.jabber.ru"), "Foo<a class=\"roomjid\" href=\"xmpp:codingteam@conference.jabber.ru?join\">codingteam@conference.jabber.ru</a>Bar"),
+      (None, "The Cake is a Lie!")
+    )
+
+    testData.foreach {
+      case (expected, input) =>
+        assertResult(expected)(extractRoomJid(input))
+    }
+  }
+
+  test("extractDate") {
+    val testData = List(
+      (Some("2014-08-25"), "Foo<div class=\"logdate\">25.08.2014<span class=\"w3c\">Bar"),
+      (None, "The Cake is a Lie")
+    )
+
+    testData.foreach {
+      case (expected, input) =>
+        assertResult(expected)(extractDate(input))
+    }
+  }
 }
