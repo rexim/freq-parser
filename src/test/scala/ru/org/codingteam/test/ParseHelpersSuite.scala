@@ -3,35 +3,16 @@ package ru.org.codingteam.test
 import org.scalatest.FunSuite
 
 import ru.org.codingteam.freqparser.ParseHelpers._
+import ru.org.codingteam.freqparser.{RegularMessageType, LogMessage}
 
 class ParseHelpersSuite extends FunSuite {
-  test("extractRoomFromFileName") {
-    val testData = List(
-      (Some("codingteam@conference.jabber.ru"), "./logs/chat/codingteam@conference.jabber.ru/2014/08/19.html"),
-      (Some("foo@bar"), "foo@bar"),
-      (Some("herp@derp"), "./logs/herp@derp"),
-      (Some("hello@world"), "hello@world/"),
-      (None, "The Cake is a Lie!")
-    )
-    processStringTestData(extractRoomFromFileName)(testData)
-  }
-
-  test("extractDateFromFileName") {
-    val testData = List(
-      (Some("2014-08-19"), "./logs/chat/codingteam@conference.jabber.ru/2014/08/19.html"),
-      (None, "The Cake is a Lie!")
-    )
-
-    processStringTestData(extractDateFromFileName)(testData)
-  }
-
   test("extractRoomJid") {
     val testData = List(
       (Some("codingteam@conference.jabber.ru"), "Foo<a class=\"roomjid\" href=\"xmpp:codingteam@conference.jabber.ru?join\">codingteam@conference.jabber.ru</a>Bar"),
       (None, "The Cake is a Lie!")
     )
 
-    processStringTestData(extractRoomJid)(testData)
+    processTestData(extractRoomJid)(testData)
   }
 
   test("extractDate") {
@@ -40,11 +21,26 @@ class ParseHelpersSuite extends FunSuite {
       (None, "The Cake is a Lie")
     )
 
-    processStringTestData(extractDate)(testData)
+    processTestData(extractDate)(testData)
   }
 
-  def processStringTestData(f: (String) => Option[String])
-                           (testData: List[(Option[String], String)]) =
+  test("extractLogMessages") {
+    val testData = List(
+      (List(LogMessage("18:14:15", "nickname", RegularMessageType, "message1"),
+            LogMessage("18:14:15", "nickname", RegularMessageType, "message2")),
+       "Foo" +
+       "<a name=\"18:14:15\" href=\"#18:14:15\" class=\"ts\">[18:14:15]</a> " +
+       "<font class=\"mn\">&lt;nickname&gt;</font> message1<br/><a name=\"18:14:15\" " +
+       "href=\"#18:14:15\" class=\"ts\">[18:14:15]</a> <font class=\"mn\">&lt;nickname&gt;" +
+       "</font> message2<br/>" +
+       "Bar"),
+      (List(), "The Cake is a Lie")
+    )
+
+    processTestData(extractLogMessages)(testData)
+  }
+
+  def processTestData[E, I](f: (I) => E)(testData: List[(E, I)]) =
     for ((expected, input) <- testData) {
       assertResult(expected)(f(input))
     }

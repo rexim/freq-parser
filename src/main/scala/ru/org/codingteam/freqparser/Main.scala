@@ -1,7 +1,5 @@
 package ru.org.codingteam.freqparser
 
-import org.apache.commons.lang3.StringEscapeUtils
-
 import scala.io.Source
 import scala.slick.driver.H2Driver.simple._
 import scala.slick.jdbc.StaticQuery.interpolation
@@ -11,17 +9,6 @@ import java.io.File
 import scala.util.matching.Regex
 
 object Main {
-
-  def foreachMessageInFile(fileName: String)(f: (String, String, String, String) => Unit): Unit = {
-    val Pattern = "<a.*?>\\[(\\d{2}:\\d{2}:\\d{2})\\]</a> <font class=\"(.*?)\">(.*?)</font>(.*?)<br/>".r
-    Pattern.findAllMatchIn(Source.fromFile(fileName).mkString).foreach {
-      m => f(
-        m.group(1), m.group(2),
-        StringEscapeUtils.unescapeHtml4(m.group(3)),
-        StringEscapeUtils.unescapeHtml4(m.group(4))
-      )
-    }
-  }
 
   def recursiveListFiles(root: File, pattern: Regex): Array[File] = {
     val subFiles = root.listFiles
@@ -35,29 +22,19 @@ object Main {
       .sortWith(_ < _)
   }
 
-  def insertMessageIntoDatabase(timestamp: String,
-                                room: String,
-                                sender: String,
-                                messageType: String,
-                                message: String)
-                               (implicit session: Session): Unit =
-    sqlu"""
+  def convertLogFile(fileName: String)(implicit session: Session) = {
+    val content = Source.fromFile(fileName).mkString
+    val room = extractRoomJid(content).getOrElse(throw new IllegalArgumentException("Cannot extract room JID"))
+    val date = extractDate(content).getOrElse(throw new IllegalArgumentException("Cannot extract date"))
+    extractLogMessages(content).foreach {
+      case LogMessage(time, sender, messageType, message) => {
+        val timestamp = s"$date $time"
+        sqlu"""
           INSERT INTO log (time, room, sender, type, message)
           VALUES ($timestamp, ${room.take(255)},
-                  ${sender.take(255)}, $messageType, $message)
+                  ${sender.take(255)}, ${messageType.toString}, $message)
         """.first
-
-  def convertLogFile(fileName: String)(implicit session: Session) = {
-    val room = extractRoomFromFileName(fileName).get
-    val date = extractDateFromFileName(fileName).get
-    foreachMessageInFile(fileName) {
-      case (time, "mn", msg1, msg2) => {
-        val sender = extractNicknameFromMnMessage(msg1)
-        val timestamp = s"$date $time"
-        insertMessageIntoDatabase(timestamp, room, sender, "message", msg2)
       }
-
-      case _ => // ignore
     }
   }
 
