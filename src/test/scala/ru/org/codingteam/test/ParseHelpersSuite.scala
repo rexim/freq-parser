@@ -8,7 +8,9 @@ import ru.org.codingteam.freqparser.{RegularMessageType, LogMessage}
 class ParseHelpersSuite extends FunSuite {
   test("extractRoomJid") {
     val testData = List(
-      (Some("codingteam@conference.jabber.ru"), "Foo<a class=\"roomjid\" href=\"xmpp:codingteam@conference.jabber.ru?join\">codingteam@conference.jabber.ru</a>Bar"),
+      (Some("codingteam@conference.jabber.ru"),
+       "Foo<a class=\"roomjid\" href=\"xmpp:codingteam@conference.jabber.ru?join\">" +
+       "codingteam@conference.jabber.ru</a>Bar"),
       (None, "The Cake is a Lie!")
     )
 
@@ -38,6 +40,16 @@ class ParseHelpersSuite extends FunSuite {
     )
 
     processTestData(extractLogMessages)(testData)
+  }
+
+  test("extractNicknameFromJoinMessage") {
+    val testData = List(
+      (Some("Пётр"), "Пётр зашёл в конференцию"),
+      (Some("Пётр Васильевич"), "Пётр Васильевич зашёл в конференцию"),
+      (None, "The Cake is a Lie")
+    )
+
+    processTestData(extractNicknameFromJoinMessage)(testData)
   }
 
   def processTestData[E, I](f: (I) => E)(testData: List[(E, I)]) =
