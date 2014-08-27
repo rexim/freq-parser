@@ -1,7 +1,7 @@
 package ru.org.codingteam.freqparser
 
 import org.apache.commons.lang3.StringEscapeUtils
-import ru.org.codingteam.freqparser.extractors.{EnterMessageNickname, RegularMessageNickname}
+import ru.org.codingteam.freqparser.extractors.{LeaveMessageExtractor, EnterMessageNickname, RegularMessageNickname}
 
 object ParseHelpers {
 
@@ -37,6 +37,10 @@ object ParseHelpers {
 
     case (time, "mj", EnterMessageNickname(sender), "") => {
       LogMessage(time, sender, EnterMessageType, "")
+    }
+
+    case (time, "ml", LeaveMessageExtractor((sender, reason)), "") => {
+      LogMessage(time, sender, LeaveMessageType, s"User left: $reason")
     }
   }
 }

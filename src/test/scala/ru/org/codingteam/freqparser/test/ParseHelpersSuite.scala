@@ -2,7 +2,7 @@ package ru.org.codingteam.freqparser.test
 
 import org.scalatest.FunSuite
 import ru.org.codingteam.freqparser.ParseHelpers._
-import ru.org.codingteam.freqparser.{EnterMessageType, LogMessage, RegularMessageType}
+import ru.org.codingteam.freqparser.{LeaveMessageType, EnterMessageType, LogMessage, RegularMessageType}
 
 class ParseHelpersSuite extends FunSuite {
   test("extractRoomJid") {
@@ -40,6 +40,11 @@ class ParseHelpersSuite extends FunSuite {
        "<a name=\"00:21:36\" href=\"#00:21:36\" class=\"ts\">[00:21:36]</a> <font class=\"mj\">" +
        "Пётр зашёл в конференцию</font><br/><a name=\"00:21:36\" href=\"#00:21:36\" class=\"ts\">" +
        "[00:21:36]</a> <font class=\"mj\">Пётр Васильевич зашёл в конференцию</font><br/>"),
+      (List(LogMessage("00:25:43", "cutwater", LeaveMessageType, "User left: "),
+            LogMessage("00:25:43", "ForNeVeR", LeaveMessageType, "User left: Упоролся")),
+       "<a name=\"00:25:43\" href=\"#00:25:43\" class=\"ts\">[00:25:43]</a> <font class=\"ml\">" +
+       "cutwater вышел из конференции</font><br/><a name=\"00:25:43\" href=\"#00:25:43\" class=\"ts\">" +
+       "[00:25:43]</a> <font class=\"ml\">ForNeVeR вышел из конференции: Упоролся</font><br/>"),
       (List(), "The Cake is a Lie")
     )
 
