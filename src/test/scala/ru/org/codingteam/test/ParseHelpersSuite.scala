@@ -6,6 +6,15 @@ import ru.org.codingteam.freqparser.ParseHelpers._
 import ru.org.codingteam.freqparser.{EnterMessageType, RegularMessageType, LogMessage}
 
 class ParseHelpersSuite extends FunSuite {
+  test("extractNicknameFromRegularMessage") {
+    val testData = List(
+      (Some("nickname"), "<nickname>"),
+      (None, "The Cake is a Lie!")
+    )
+
+    processTestData(extractNicknameFromRegularMessage)(testData)
+  }
+
   test("extractRoomJid") {
     val testData = List(
       (Some("codingteam@conference.jabber.ru"),

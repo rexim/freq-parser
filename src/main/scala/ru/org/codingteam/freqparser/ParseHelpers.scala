@@ -3,13 +3,8 @@ package ru.org.codingteam.freqparser
 import org.apache.commons.lang3.StringEscapeUtils
 
 object ParseHelpers {
-  def extractNicknameFromRegularMessage(message: String): String = {
-    val Pattern = "^<(.*)>$".r
-    message match {
-      case Pattern(nickname) => nickname
-      case _ => throw new IllegalArgumentException(s"Cannot extract nickname from this '$message'")
-    }
-  }
+  def extractNicknameFromRegularMessage(message: String): Option[String] =
+    "^<(.*)>$".r.findFirstMatchIn(message).map(_.group(1))
 
   def extractNicknameFromJoinMessage(message: String): Option[String] =
     "(.+) зашёл в конференцию$".r.findFirstMatchIn(message).map(_.group(1))
@@ -42,6 +37,7 @@ object ParseHelpers {
   private val constructMessage: PartialFunction[RawMessage, LogMessage] = {
     case (time, "mn", firstChunk, secondChunk) => {
       val sender = extractNicknameFromRegularMessage(firstChunk)
+        .getOrElse(throw new IllegalArgumentException("Cannot extract nickname from a regular message"))
       LogMessage(time, sender, RegularMessageType, secondChunk.tail)
     }
 
