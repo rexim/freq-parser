@@ -1,6 +1,7 @@
 package ru.org.codingteam.freqparser
 
 import org.apache.commons.lang3.StringEscapeUtils
+import ru.org.codingteam.freqparser.extractors.{EnterMessageNickname, RegularMessageNickname}
 
 object ParseHelpers {
   def extractNicknameFromRegularMessage(message: String): Option[String] =
@@ -35,15 +36,11 @@ object ParseHelpers {
   private type RawMessage = (String, String, String, String)
 
   private val constructMessage: PartialFunction[RawMessage, LogMessage] = {
-    case (time, "mn", firstChunk, secondChunk) => {
-      val sender = extractNicknameFromRegularMessage(firstChunk)
-        .getOrElse(throw new IllegalArgumentException("Cannot extract nickname from a regular message"))
-      LogMessage(time, sender, RegularMessageType, secondChunk.tail)
+    case (time, "mn", RegularMessageNickname(sender), message) => {
+      LogMessage(time, sender, RegularMessageType, message.tail)
     }
 
-    case (time, "mj", firstChunk, "") => {
-      val sender = extractNicknameFromJoinMessage(firstChunk)
-        .getOrElse(throw new IllegalArgumentException("Cannot extract nickname from a join message"))
+    case (time, "mj", EnterMessageNickname(sender), "") => {
       LogMessage(time, sender, EnterMessageType, "")
     }
   }
