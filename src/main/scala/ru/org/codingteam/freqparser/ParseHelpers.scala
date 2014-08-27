@@ -4,11 +4,6 @@ import org.apache.commons.lang3.StringEscapeUtils
 import ru.org.codingteam.freqparser.extractors.{EnterMessageNickname, RegularMessageNickname}
 
 object ParseHelpers {
-  def extractNicknameFromRegularMessage(message: String): Option[String] =
-    "^<(.*)>$".r.findFirstMatchIn(message).map(_.group(1))
-
-  def extractNicknameFromJoinMessage(message: String): Option[String] =
-    "(.+) зашёл в конференцию$".r.findFirstMatchIn(message).map(_.group(1))
 
   def extractRoomJid(content: String): Option[String] =
     "<a class=\"roomjid\".*>(.+?@.+?)</a>".r.findFirstMatchIn(content).map(_.group(1))

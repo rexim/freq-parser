@@ -1,20 +1,10 @@
-package ru.org.codingteam.test
+package ru.org.codingteam.freqparser.test
 
 import org.scalatest.FunSuite
-
 import ru.org.codingteam.freqparser.ParseHelpers._
-import ru.org.codingteam.freqparser.{EnterMessageType, RegularMessageType, LogMessage}
+import ru.org.codingteam.freqparser.{EnterMessageType, LogMessage, RegularMessageType}
 
 class ParseHelpersSuite extends FunSuite {
-  test("extractNicknameFromRegularMessage") {
-    val testData = List(
-      (Some("nickname"), "<nickname>"),
-      (None, "The Cake is a Lie!")
-    )
-
-    processTestData(extractNicknameFromRegularMessage)(testData)
-  }
-
   test("extractRoomJid") {
     val testData = List(
       (Some("codingteam@conference.jabber.ru"),
@@ -54,16 +44,6 @@ class ParseHelpersSuite extends FunSuite {
     )
 
     processTestData(extractLogMessages)(testData)
-  }
-
-  test("extractNicknameFromJoinMessage") {
-    val testData = List(
-      (Some("Пётр"), "Пётр зашёл в конференцию"),
-      (Some("Пётр Васильевич"), "Пётр Васильевич зашёл в конференцию"),
-      (None, "The Cake is a Lie")
-    )
-
-    processTestData(extractNicknameFromJoinMessage)(testData)
   }
 
   def processTestData[E, I](f: (I) => E)(testData: List[(E, I)]) =
