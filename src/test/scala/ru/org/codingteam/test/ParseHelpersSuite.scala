@@ -3,7 +3,7 @@ package ru.org.codingteam.test
 import org.scalatest.FunSuite
 
 import ru.org.codingteam.freqparser.ParseHelpers._
-import ru.org.codingteam.freqparser.{RegularMessageType, LogMessage}
+import ru.org.codingteam.freqparser.{EnterMessageType, RegularMessageType, LogMessage}
 
 class ParseHelpersSuite extends FunSuite {
   test("extractRoomJid") {
@@ -36,6 +36,11 @@ class ParseHelpersSuite extends FunSuite {
        "href=\"#18:14:15\" class=\"ts\">[18:14:15]</a> <font class=\"mn\">&lt;nickname&gt;" +
        "</font> message2<br/>" +
        "Bar"),
+      (List(LogMessage("00:21:36", "Пётр", EnterMessageType, ""),
+            LogMessage("00:21:36", "Пётр Васильевич", EnterMessageType, "")),
+       "<a name=\"00:21:36\" href=\"#00:21:36\" class=\"ts\">[00:21:36]</a> <font class=\"mj\">" +
+       "Пётр зашёл в конференцию</font><br/><a name=\"00:21:36\" href=\"#00:21:36\" class=\"ts\">" +
+       "[00:21:36]</a> <font class=\"mj\">Пётр Васильевич зашёл в конференцию</font><br/>"),
       (List(), "The Cake is a Lie")
     )
 

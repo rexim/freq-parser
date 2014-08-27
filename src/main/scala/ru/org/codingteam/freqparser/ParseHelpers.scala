@@ -44,5 +44,11 @@ object ParseHelpers {
       val sender = extractNicknameFromRegularMessage(firstChunk)
       LogMessage(time, sender, RegularMessageType, secondChunk.tail)
     }
+
+    case (time, "mj", firstChunk, "") => {
+      val sender = extractNicknameFromJoinMessage(firstChunk)
+        .getOrElse(throw new IllegalArgumentException("Cannot extract nickname from a join message"))
+      LogMessage(time, sender, EnterMessageType, "")
+    }
   }
 }
