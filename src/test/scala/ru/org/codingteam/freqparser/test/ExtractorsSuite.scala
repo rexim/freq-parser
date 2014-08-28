@@ -1,7 +1,7 @@
 package ru.org.codingteam.freqparser.test
 
 import org.scalatest.FunSuite
-import ru.org.codingteam.freqparser.extractors.{KickMessageExtractor, LeaveMessageExtractor, RegularMessageNickname, EnterMessageNickname}
+import ru.org.codingteam.freqparser.extractors.{KickMessageExtractor, LeaveMessageExtractor, RegularMessageNickname, EnterMessageNicknameExtractor}
 
 class ExtractorsSuite extends FunSuite{
   test("RegularMessageNickname") {
@@ -20,7 +20,7 @@ class ExtractorsSuite extends FunSuite{
       (None, "The Cake is a Lie")
     )
 
-    processTestData(EnterMessageNickname.unapply)(testData)
+    processTestData(EnterMessageNicknameExtractor.unapply)(testData)
   }
 
   test("LeaveMessageExtractor") {

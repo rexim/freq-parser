@@ -1,7 +1,7 @@
 package ru.org.codingteam.freqparser
 
 import org.apache.commons.lang3.StringEscapeUtils
-import ru.org.codingteam.freqparser.extractors.{KickMessageExtractor, LeaveMessageExtractor, EnterMessageNickname, RegularMessageNickname}
+import ru.org.codingteam.freqparser.extractors.{KickMessageExtractor, LeaveMessageExtractor, EnterMessageNicknameExtractor, RegularMessageNickname}
 
 object ParseHelpers {
 
@@ -35,7 +35,7 @@ object ParseHelpers {
       LogMessage(time, sender, RegularMessageType, message.tail)
     }
 
-    case (time, "mj", EnterMessageNickname(sender), "") => {
+    case (time, "mj", EnterMessageNicknameExtractor(sender), "") => {
       LogMessage(time, sender, EnterMessageType, "")
     }
 
