@@ -26,14 +26,18 @@ object Main {
     val content = Source.fromFile(fileName).mkString
     val room = extractRoomJid(content).getOrElse(throw new IllegalArgumentException("Cannot extract room JID"))
     val date = extractDate(content).getOrElse(throw new IllegalArgumentException("Cannot extract date"))
-    extractLogMessages(content).foreach {
-      case LogMessage(time, sender, messageType, message) => {
-        val timestamp = s"$date $time"
-        sqlu"""
-          INSERT INTO log (time, room, sender, type, message)
-          VALUES ($timestamp, ${room.take(255)},
+
+    extractRawMessages(content).foreach {
+      rawMessage => constructLogMessage(rawMessage) match {
+        case Some(LogMessage(time, sender, messageType, message)) => {
+          val timestamp = s"$date $time"
+          sqlu"""
+            INSERT INTO log (time, room, sender, type, message)
+            VALUES ($timestamp, ${room.take(255)},
                   ${sender.take(255)}, ${messageType.toString}, $message)
-        """.first
+          """.first
+        }
+        case None => //println(s"[WARNING] Cannot recognize a raw message: $rawMessage")
       }
     }
   }
