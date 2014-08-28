@@ -37,14 +37,25 @@ class ParseHelpersSuite extends FunSuite {
        "Bar"),
       (List(LogMessage("00:21:36", "Пётр", EnterMessageType, ""),
             LogMessage("00:21:36", "Пётр Васильевич", EnterMessageType, "")),
+       "Herp" +
        "<a name=\"00:21:36\" href=\"#00:21:36\" class=\"ts\">[00:21:36]</a> <font class=\"mj\">" +
        "Пётр зашёл в конференцию</font><br/><a name=\"00:21:36\" href=\"#00:21:36\" class=\"ts\">" +
-       "[00:21:36]</a> <font class=\"mj\">Пётр Васильевич зашёл в конференцию</font><br/>"),
+       "[00:21:36]</a> <font class=\"mj\">Пётр Васильевич зашёл в конференцию</font><br/>" +
+       "Derp"),
       (List(LogMessage("00:25:43", "cutwater", LeaveMessageType, "User left: "),
             LogMessage("00:25:43", "ForNeVeR", LeaveMessageType, "User left: Упоролся")),
+       "Hello" +
        "<a name=\"00:25:43\" href=\"#00:25:43\" class=\"ts\">[00:25:43]</a> <font class=\"ml\">" +
        "cutwater вышел из конференции</font><br/><a name=\"00:25:43\" href=\"#00:25:43\" class=\"ts\">" +
-       "[00:25:43]</a> <font class=\"ml\">ForNeVeR вышел из конференции: Упоролся</font><br/>"),
+       "[00:25:43]</a> <font class=\"ml\">ForNeVeR вышел из конференции: Упоролся</font><br/>" +
+       "World"),
+      (List(LogMessage("03:02:51", "Пётр", LeaveMessageType, "User kicked: Иди спать!"),
+            LogMessage("03:02:51", "Пётр Васильевич", LeaveMessageType, "User kicked: ")),
+       "Foo" +
+       "<a name=\"03:02:51\" href=\"#03:02:51\" class=\"ts\">[03:02:51]</a> <font class=\"ml\">" +
+       "Пётр выгнали из конференции: Иди спать!</font><br/><a name=\"03:02:51\" href=\"#03:02:51\" " +
+       "class=\"ts\">[03:02:51]</a> <font class=\"ml\">Пётр Васильевич выгнали из конференции</font><br/>" +
+       "Bar"),
       (List(), "The Cake is a Lie")
     )
 

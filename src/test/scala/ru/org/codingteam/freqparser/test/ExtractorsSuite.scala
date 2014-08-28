@@ -1,7 +1,7 @@
 package ru.org.codingteam.freqparser.test
 
 import org.scalatest.FunSuite
-import ru.org.codingteam.freqparser.extractors.{LeaveMessageExtractor, RegularMessageNickname, EnterMessageNickname}
+import ru.org.codingteam.freqparser.extractors.{KickMessageExtractor, LeaveMessageExtractor, RegularMessageNickname, EnterMessageNickname}
 
 class ExtractorsSuite extends FunSuite{
   test("RegularMessageNickname") {
@@ -32,6 +32,17 @@ class ExtractorsSuite extends FunSuite{
     )
 
     processTestData(LeaveMessageExtractor.unapply)(testData)
+  }
+
+  test("KickMessageExtractor") {
+    val testData = List(
+      (Some(("Пётр", "Ушёл спать")), "Пётр выгнали из конференции: Ушёл спать"),
+      (Some(("Пётр Васильевич", "Ушёл спать")), "Пётр Васильевич выгнали из конференции: Ушёл спать"),
+      (Some(("Пётр Васильевич", "")), "Пётр Васильевич выгнали из конференции"),
+      (None, "The Cake is a Lie")
+    )
+
+    processTestData(KickMessageExtractor.unapply)(testData)
   }
 
   def processTestData[E, I](f: (I) => E)(testData: List[(E, I)]) =
