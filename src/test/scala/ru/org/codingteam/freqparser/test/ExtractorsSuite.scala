@@ -1,19 +1,19 @@
 package ru.org.codingteam.freqparser.test
 
 import org.scalatest.FunSuite
-import ru.org.codingteam.freqparser.extractors.{KickMessageExtractor, LeaveMessageExtractor, RegularMessageNickname, EnterMessageNicknameExtractor}
+import ru.org.codingteam.freqparser.extractors._
 
 class ExtractorsSuite extends FunSuite{
-  test("RegularMessageNickname") {
+  test("RegularMessageNicknameExtractor") {
     val testData = List(
       (Some("nickname"), "<nickname>"),
       (None, "The Cake is a Lie!")
     )
 
-    processTestData(RegularMessageNickname.unapply)(testData)
+    processTestData(RegularMessageNicknameExtractor.unapply)(testData)
   }
 
-  test("EnterMessageNickname") {
+  test("EnterMessageNicknameExtractor") {
     val testData = List(
       (Some("Пётр"), "Пётр зашёл в конференцию"),
       (Some("Пётр Васильевич"), "Пётр Васильевич зашёл в конференцию"),
@@ -43,6 +43,17 @@ class ExtractorsSuite extends FunSuite{
     )
 
     processTestData(KickMessageExtractor.unapply)(testData)
+  }
+
+  test("RenameMessageExtractor") {
+    val testData = List(
+      (Some(("Foo", "Bar")), "Foo сменил ник на Bar"),
+      (Some(("Herp Derp", "Hello World")), "Herp Derp сменил ник на Hello World"),
+      (Some(("сменил ник на", "сменил ник")), "сменил ник на сменил ник на сменил ник"),
+      (None, "The Cake is a Lie")
+    )
+
+    processTestData(RenameMessageExtractor.unapply)(testData)
   }
 
   def processTestData[E, I](f: (I) => E)(testData: List[(E, I)]) =

@@ -31,7 +31,7 @@ object ParseHelpers {
   private type RawMessage = (String, String, String, String)
 
   private val constructMessage: PartialFunction[RawMessage, LogMessage] = {
-    case (time, "mn", RegularMessageNickname(sender), message) => {
+    case (time, "mn", RegularMessageNicknameExtractor(sender), message) => {
       LogMessage(time, sender, RegularMessageType, message.tail)
     }
 
@@ -49,6 +49,10 @@ object ParseHelpers {
 
     case (time, "ml", BanMessageExtractor((sender, reason)), "") => {
       LogMessage(time, sender, LeaveMessageType, s"User banned: $reason")
+    }
+
+    case (time, "ml", RenameMessageExtractor((sender, newNick)), "") => {
+      LogMessage(time, sender, LeaveMessageType, s"renamed to $newNick")
     }
   }
 }
