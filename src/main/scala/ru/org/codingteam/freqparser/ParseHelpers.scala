@@ -1,7 +1,7 @@
 package ru.org.codingteam.freqparser
 
 import org.apache.commons.lang3.StringEscapeUtils
-import ru.org.codingteam.freqparser.extractors.{KickMessageExtractor, LeaveMessageExtractor, EnterMessageNicknameExtractor, RegularMessageNickname}
+import ru.org.codingteam.freqparser.extractors._
 
 object ParseHelpers {
 
@@ -45,6 +45,10 @@ object ParseHelpers {
 
     case (time, "ml", KickMessageExtractor((sender, reason)), "") => {
       LogMessage(time, sender, LeaveMessageType, s"User kicked: $reason")
+    }
+
+    case (time, "ml", BanMessageExtractor((sender, reason)), "") => {
+      LogMessage(time, sender, LeaveMessageType, s"User banned: $reason")
     }
   }
 }
