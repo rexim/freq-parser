@@ -3,6 +3,8 @@ package ru.org.codingteam.freqparser
 import org.apache.commons.lang3.StringEscapeUtils
 import ru.org.codingteam.freqparser.extractors._
 
+import scala.collection.mutable
+
 object ParseHelpers {
 
   type RawMessage = (String, String, String, String)
@@ -30,31 +32,44 @@ object ParseHelpers {
     )
   }
 
-  def constructLogMessage(rawMessage: RawMessage): Option[LogMessage] = rawMessage match {
-    case (time, "mn", RegularMessageNicknameExtractor(sender), message) => {
-      Some(LogMessage(time, sender, RegularMessageType, message.tail))
-    }
+  def extractMeMessage(participants: List[String], content: String): Option[(String, String)] =
+    participants.map({
+      p => s"\\* \\Q$p\\E (.*?)$$".r.findFirstMatchIn(content).map(m => (p, m.group(1)))
+    }).find(_.isDefined).getOrElse(None)
 
-    case (time, "mj", EnterMessageNicknameExtractor(sender), "") => {
-      Some(LogMessage(time, sender, EnterMessageType, ""))
-    }
+  def constructLogMessage(rawMessage: RawMessage, participants: mutable.HashSet[String]): Option[LogMessage] =
+    rawMessage match {
+      case (time, "mn", RegularMessageNicknameExtractor(sender), message) => {
+        Some(LogMessage(time, sender, RegularMessageType, message.tail))
+      }
 
-    case (time, "ml", LeaveMessageExtractor((sender, reason)), "") => {
-      Some(LogMessage(time, sender, LeaveMessageType, s"User left: $reason"))
-    }
+      case (time, "mj", EnterMessageNicknameExtractor(sender), "") => {
+        Some(LogMessage(time, sender, EnterMessageType, ""))
+      }
 
-    case (time, "ml", KickMessageExtractor((sender, reason)), "") => {
-      Some(LogMessage(time, sender, LeaveMessageType, s"User kicked: $reason"))
-    }
+      case (time, "ml", LeaveMessageExtractor((sender, reason)), "") => {
+        Some(LogMessage(time, sender, LeaveMessageType, s"User left: $reason"))
+      }
 
-    case (time, "ml", BanMessageExtractor((sender, reason)), "") => {
-      Some(LogMessage(time, sender, LeaveMessageType, s"User banned: $reason"))
-    }
+      case (time, "ml", KickMessageExtractor((sender, reason)), "") => {
+        Some(LogMessage(time, sender, LeaveMessageType, s"User kicked: $reason"))
+      }
 
-    case (time, "ml", RenameMessageExtractor((sender, newNick)), "") => {
-      Some(LogMessage(time, sender, LeaveMessageType, s"renamed to $newNick"))
-    }
+      case (time, "ml", BanMessageExtractor((sender, reason)), "") => {
+        Some(LogMessage(time, sender, LeaveMessageType, s"User banned: $reason"))
+      }
 
-    case _ => None
-  }
+      case (time, "ml", RenameMessageExtractor((sender, newNick)), "") => {
+        participants.add(newNick)
+        Some(LogMessage(time, sender, LeaveMessageType, s"renamed to $newNick"))
+      }
+
+      case (time, "mne", firstChunk, "") => extractMeMessage(participants.toList, firstChunk) match {
+        case Some((sender, message)) =>
+          Some(LogMessage(time, sender, RegularMessageType, s"/me $message"))
+        case None => None
+      }
+
+      case _ => None
+    }
 }

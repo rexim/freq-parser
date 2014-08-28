@@ -1,5 +1,6 @@
 package ru.org.codingteam.freqparser
 
+import scala.collection.mutable
 import scala.io.Source
 import scala.slick.driver.H2Driver.simple._
 import scala.slick.jdbc.StaticQuery.interpolation
@@ -22,14 +23,16 @@ object Main {
       .sortWith(_ < _)
   }
 
-  def convertLogFile(fileName: String)(implicit session: Session) = {
+  def convertLogFile(fileName: String, participants: mutable.HashSet[String])(implicit session: Session) = {
     val content = Source.fromFile(fileName).mkString
     val room = extractRoomJid(content).getOrElse(throw new IllegalArgumentException("Cannot extract room JID"))
     val date = extractDate(content).getOrElse(throw new IllegalArgumentException("Cannot extract date"))
 
     extractRawMessages(content).foreach {
-      rawMessage => constructLogMessage(rawMessage) match {
+      rawMessage => constructLogMessage(rawMessage, participants) match {
         case Some(LogMessage(time, sender, messageType, message)) => {
+          participants.add(sender)
+
           val timestamp = s"$date $time"
           sqlu"""
             INSERT INTO log (time, room, sender, type, message)
@@ -42,13 +45,15 @@ object Main {
     }
   }
 
-  def main(args: Array[String]) =
+  def main(args: Array[String]) = {
+    implicit val participants = new mutable.HashSet[String]()
     Database.forURL("jdbc:h2:./hell", driver = "org.h2.Driver", user = "sa") withSession {
       implicit session => getLogFiles(".").foreach {
         logFile => {
-          convertLogFile(logFile)
+          convertLogFile(logFile, participants)
           println(logFile)
         }
       }
     }
+  }
 }
