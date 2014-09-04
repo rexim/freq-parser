@@ -47,19 +47,19 @@ object ParseHelpers {
         Some(LogMessage(time, sender, EnterMessageType, ""))
       }
 
-      case (time, "ml", LeaveMessageExtractor((sender, reason)), "") => {
+      case (time, "ml", LeaveMessageExtractor(sender, reason), "") => {
         Some(LogMessage(time, sender, LeaveMessageType, s"User left: $reason"))
       }
 
-      case (time, "ml", KickMessageExtractor((sender, reason)), "") => {
+      case (time, "ml", KickMessageExtractor(sender, reason), "") => {
         Some(LogMessage(time, sender, LeaveMessageType, s"User kicked: $reason"))
       }
 
-      case (time, "ml", BanMessageExtractor((sender, reason)), "") => {
+      case (time, "ml", BanMessageExtractor(sender, reason), "") => {
         Some(LogMessage(time, sender, LeaveMessageType, s"User banned: $reason"))
       }
 
-      case (time, "ml", RenameMessageExtractor((sender, newNick)), "") => {
+      case (time, "ml", RenameMessageExtractor(sender, newNick), "") => {
         participants.add(newNick)
         Some(LogMessage(time, sender, LeaveMessageType, s"renamed to $newNick"))
       }
