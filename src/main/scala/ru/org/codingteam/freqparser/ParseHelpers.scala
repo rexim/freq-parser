@@ -1,7 +1,6 @@
 package ru.org.codingteam.freqparser
 
 import org.apache.commons.lang3.StringEscapeUtils
-import ru.org.codingteam.freqparser.extractors._
 
 import scala.collection.mutable
 
@@ -39,27 +38,29 @@ object ParseHelpers {
 
   def constructLogMessage(rawMessage: RawMessage, participants: mutable.HashSet[String]): Option[LogMessage] =
     rawMessage match {
-      case (time, "mn", RegularMessageNicknameExtractor(sender), message) => {
+      case (time, "mn", RegexExtractors.RegularMessageNickname(sender), message) => {
         Some(LogMessage(time, sender, RegularMessageType, message.tail))
       }
 
-      case (time, "mj", EnterMessageNicknameExtractor(sender), "") => {
+      case (time, "mj", RegexExtractors.EnterMessageNickname(sender), "") => {
         Some(LogMessage(time, sender, EnterMessageType, ""))
       }
 
-      case (time, "ml", LeaveMessageExtractor(sender, reason), "") => {
+      case (time, "ml", RegexExtractors.LeaveMessage(sender, reason), "") => {
         Some(LogMessage(time, sender, LeaveMessageType, s"User left: $reason"))
       }
 
-      case (time, "ml", KickMessageExtractor(sender, reason), "") => {
+      case (time, "ml", RegexExtractors.KickMessage(sender, nullableReason), "") => {
+        val reason = if (nullableReason == null) "" else nullableReason
         Some(LogMessage(time, sender, LeaveMessageType, s"User kicked: $reason"))
       }
 
-      case (time, "ml", BanMessageExtractor(sender, reason), "") => {
+      case (time, "ml", RegexExtractors.BanMessage(sender, nullableReason), "") => {
+        val reason = if (nullableReason == null) "" else nullableReason
         Some(LogMessage(time, sender, LeaveMessageType, s"User banned: $reason"))
       }
 
-      case (time, "ml", RenameMessageExtractor(sender, newNick), "") => {
+      case (time, "ml", RegexExtractors.RenameMessage(sender, newNick), "") => {
         participants.add(newNick)
         Some(LogMessage(time, sender, LeaveMessageType, s"renamed to $newNick"))
       }
@@ -70,7 +71,7 @@ object ParseHelpers {
         case None => None
       }
 
-      case (time, "roomcsubject", ChangeTopicMessageExtractor(sender, topic), "") => {
+      case (time, "roomcsubject", RegexExtractors.ChangeTopic(sender, topic), "") => {
         Some(LogMessage(time, sender, RegularMessageType, s"changed the topic: $topic"))
       }
 

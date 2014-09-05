@@ -48,11 +48,9 @@ object Main {
   def main(args: Array[String]) = {
     implicit val participants = new mutable.HashSet[String]()
     Database.forURL("jdbc:h2:./hell", driver = "org.h2.Driver", user = "sa") withSession {
-      implicit session => getLogFiles(".").foreach {
-        logFile => {
-          convertLogFile(logFile, participants)
-          println(logFile)
-        }
+      implicit session => for (logFile <- getLogFiles(".")) {
+        convertLogFile(logFile, participants)
+        println(logFile)
       }
     }
   }
