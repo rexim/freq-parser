@@ -56,6 +56,15 @@ class ExtractorsSuite extends FunSuite{
     processTestData(RenameMessageExtractor.unapply)(testData)
   }
 
+  test("ChangeTopicMessageExtractor") {
+    val testData = List(
+      (Some(("Василий Петрович", "Hello, World")), "Василий Петрович установил(а) тему: Hello, World"),
+      (None, "The Cake is a Lie!")
+    )
+
+    processTestData(ChangeTopicMessageExtractor.unapply)(testData)
+  }
+
   def processTestData[E, I](f: (I) => E)(testData: List[(E, I)]) =
     for ((expected, input) <- testData) {
       assertResult(expected)(f(input))

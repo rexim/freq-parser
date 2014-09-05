@@ -70,6 +70,10 @@ object ParseHelpers {
         case None => None
       }
 
+      case (time, "roomcsubject", ChangeTopicMessageExtractor(sender, topic), "") => {
+        Some(LogMessage(time, sender, RegularMessageType, s"changed the topic: $topic"))
+      }
+
       case _ => None
     }
 }

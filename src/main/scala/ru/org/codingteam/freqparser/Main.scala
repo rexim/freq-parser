@@ -40,7 +40,7 @@ object Main {
                   ${sender.take(255)}, ${messageType.toString}, $message)
           """.first
         }
-        case None => //println(s"[WARNING] Cannot recognize a raw message: $rawMessage")
+        case None => println(s"[WARNING] Cannot recognize a raw message: $rawMessage")
       }
     }
   }
