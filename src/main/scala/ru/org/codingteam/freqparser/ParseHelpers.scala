@@ -46,7 +46,8 @@ object ParseHelpers {
         Some(LogMessage(time, sender, EnterMessageType, ""))
       }
 
-      case (time, "ml", RegexExtractors.LeaveMessage(sender, reason), "") => {
+      case (time, "ml", RegexExtractors.LeaveMessage(sender, nullableReason), "") => {
+        val reason = if (nullableReason == null) "" else nullableReason
         Some(LogMessage(time, sender, LeaveMessageType, s"User left: $reason"))
       }
 
