@@ -11,3 +11,6 @@ defined like
 [this](https://github.com/codingteam/horta-hell/blob/master/src/main/resources/db/log/V2__Create-log-table.sql). And
 finally do `sbt run`. The convertor recursively finds all files that
 match `\d{2}\.html` and converts them into the database.
+
+**NOTE:** due to naive implementation of /me messages parsing it is
+recommended to convert one conference at a time.
